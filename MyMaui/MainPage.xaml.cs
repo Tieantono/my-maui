@@ -1,28 +1,58 @@
 ﻿using MyMaui.Models;
+using MyMaui.Services;
 using Z.Expressions;
 
 namespace MyMaui;
 
 public partial class MainPage : ContentPage
 {
-    int count = 0;
-
     public MainPage()
     {
         InitializeComponent();
-        EvaluateRequest();
+        //EvaluateRequest();
     }
 
-    private void OnCounterClicked(object sender, EventArgs e)
+    string? translatedNumber;
+
+    private void OnTranslate(object sender, EventArgs e)
     {
-        count++;
+        var enteredNumber = PhoneNumberText.Text;
+        translatedNumber = PhonewordTranslator.ToNumber(enteredNumber);
 
-        if (count == 1)
-            CounterBtn.Text = $"Clicked {count} time";
+        if (!string.IsNullOrEmpty(translatedNumber))
+        {
+            CallButton.IsEnabled = true;
+            CallButton.Text = $"Call {translatedNumber}";
+        }
         else
-            CounterBtn.Text = $"Clicked {count} times";
+        {
+            CallButton.IsEnabled = false;
+            CallButton.Text = "Call";
+        }
+    }
 
-        SemanticScreenReader.Announce(CounterBtn.Text);
+    async void OnCall(object sender, EventArgs e)
+    {
+        if (await this.DisplayAlert(
+            "Dial a Number",
+            $"Would you like to call {translatedNumber}?",
+            "Yes",
+            "No"))
+        {
+            try
+            {
+                if (PhoneDialer.Default.IsSupported && !string.IsNullOrWhiteSpace(translatedNumber))
+                    PhoneDialer.Default.Open(translatedNumber);
+            }
+            catch (ArgumentNullException)
+            {
+                await DisplayAlert("Unable to make the call", "Phone number was not valid.", "OK");
+            }
+            catch (Exception)
+            {
+                await DisplayAlert("Unable to make the call", "Phone call failed.", "OK");
+            }
+        }
     }
 
     private void EvaluateRequest()
@@ -73,13 +103,14 @@ public partial class MainPage : ContentPage
 
         if (isValid)
         {
-            TestLabel.Text = "Eval is true";
-            itemList.Add(TestLabel.Text);
+            //TestLabel.Text = "Eval is true";
+            //itemList.Add(TestLabel.Text);
         }
         else
         {
-            TestLabel.Text = "Eval is false";
-            itemList.Add(TestLabel.Text);
+            //TestLabel.Text = "Eval is false";
+            //itemList.Add(TestLabel.Text);
         }
     }
+
 }
