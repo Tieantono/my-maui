@@ -30,6 +30,10 @@
                 SemanticProperties.Hint="Counts the number of times you click"
                 Clicked="OnCounterClicked"
                 HorizontalOptions="Fill" />
+
+            <Label x:Name="TestLabel"
+                   Text="Test"
+                />
         </VerticalStackLayout>
     </ScrollView>
 
